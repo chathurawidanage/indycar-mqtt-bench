@@ -1,5 +1,11 @@
 # How to build
 
+This application depends on IndyCar record streamer.
+
+First build IndyCar record streamer from [here.](https://github.com/DSC-SPIDAL/IndyCar/tree/master/utils/record-streamer)
+
+Then build this module with following command.
+
 ```mvn clean install```
 
 # How to run
