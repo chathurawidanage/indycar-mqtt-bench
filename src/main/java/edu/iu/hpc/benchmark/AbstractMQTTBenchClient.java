@@ -42,6 +42,7 @@ public abstract class AbstractMQTTBenchClient {
         connOpts.setPassword(password.toCharArray());
         connOpts.setAutomaticReconnect(true);
         connOpts.setSocketFactory(new MQTTSocketFactory());
+        connOpts.setMaxInflight(50000);
         return connOpts;
     }
 

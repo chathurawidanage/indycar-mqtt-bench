@@ -68,8 +68,11 @@ public class Benchmark {
                     mqttPublisher.publishMessage(uuid, record);
                     if (count.incrementAndGet() == messages) {
                         ResultsStore.writeToFile("results_" + noOfCars + ".csv");
+                        System.out.println("Results written to file.");
                         System.exit(0);
                     }
+
+                    System.out.println(count.get());
                 } catch (MqttException e) {
                     e.printStackTrace();
                     System.out.println("Error in sending message");
