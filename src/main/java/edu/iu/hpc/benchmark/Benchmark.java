@@ -1,13 +1,13 @@
 package edu.iu.hpc.benchmark;
 
 import iu.edu.indycar.streamer.RecordStreamer;
+import iu.edu.indycar.streamer.records.TelemetryRecord;
+import iu.edu.indycar.streamer.records.policy.AbstractRecordAcceptPolicy;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Benchmark {
@@ -46,15 +46,49 @@ public class Benchmark {
 
         final AtomicInteger count = new AtomicInteger(0);
 
-        Map<String, Boolean> carsConsidered = new ConcurrentHashMap<>();
+        final List<String> goodCarsInrOrder = Arrays.asList(
+                "22",
+                "88",
+                "66",
+                "23",
+                "24",
+                "25",
+                "26",
+                "27",
+                "28",
+                "29",
+                "98",
+                "32",
+                "12",
+                "14",
+                "59",
+                "15",
+                "17",
+                "18",
+                "19",
+                "1",
+                "3",
+                "4",
+                "6",
+                "7",
+                "9",
+                "60",
+                "64",
+                "20",
+                "21",
+                "30",
+                "10",
+                "33",
+                "13"
+        );
+
+        final Set<String> goodCars = new HashSet<>(goodCarsInrOrder.subList(0, Math.min(goodCarsInrOrder.size(), noOfCars)));
+
+        System.out.println("Considering data for cars : " + goodCars);
 
         recordStreamer.setTelemetryRecordListener(tRecord -> {
 
-            if (carsConsidered.size() < noOfCars) {
-                carsConsidered.put(tRecord.getCarNumber(), true);
-            }
-
-            if (carsConsidered.getOrDefault(tRecord.getCarNumber(), false)) {
+            if (goodCars.contains(tRecord.getCarNumber())) {
                 String uuid = UUID.randomUUID().toString();
                 String record = String.format(
                         "%s,%s,%f,%f,%f",
@@ -82,6 +116,25 @@ public class Benchmark {
                 }
             }
         });
+
+
+        final HashMap<String, Boolean> foundFirstNonZero = new HashMap<>();
+
+        recordStreamer.addRecordAcceptPolicy(
+                TelemetryRecord.class,
+                new AbstractRecordAcceptPolicy<TelemetryRecord>() {
+                    @Override
+                    public boolean evaluate(TelemetryRecord indycarRecord) {
+                        if (foundFirstNonZero.containsKey(indycarRecord.getCarNumber())) {
+                            return true;
+                        } else if (indycarRecord.getLapDistance() != 0) {
+                            foundFirstNonZero.put(indycarRecord.getCarNumber(), true);
+                            return true;
+                        }
+                        return false;
+                    }
+                }
+        );
 
         mqttPublisher.start();
         mqttSubscriber.start();
