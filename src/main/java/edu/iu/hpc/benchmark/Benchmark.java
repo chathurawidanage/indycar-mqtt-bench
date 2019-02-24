@@ -105,8 +105,6 @@ public class Benchmark {
                         System.out.println("Results written to file.");
                         System.exit(0);
                     }
-
-                    System.out.println(count.get());
                 } catch (MqttException e) {
                     e.printStackTrace();
                     System.out.println("Error in sending message");
